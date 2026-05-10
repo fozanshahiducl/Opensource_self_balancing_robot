@@ -3,11 +3,27 @@ import sys
 import numpy as np
 import serial
 import time
+import serial.tools.list_ports
 
 
 #Pygame init
 pygame.init()
-ser = serial.Serial(port="COM4", baudrate=115200)
+# List available ports
+ports = list(serial.tools.list_ports.comports())
+print("\nAvailable Serial Ports:")
+for i, p in enumerate(ports):
+    print(f"[{i}] {p.device}")
+
+# User selection
+if not ports:
+    print("No devices found. Check your connection.")
+    sys.exit()
+
+choice = input("\nSelect port index: ")
+selected_port = ports[int(choice)].device
+
+# Initialize serial with selection
+ser = serial.Serial(port=selected_port, baudrate=115200, timeout=0.1)
 width, height = 800, 600
 screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
 pygame.display.set_caption("Rotation de la flèche")
@@ -165,11 +181,16 @@ while running:
 
     # read data until \n is received
     Content = ser.readline()
-    # remove the \r and \n from the string
+    '''# remove the \r and \n from the string
     Content = Content.decode().replace("\r\n", "")
     # print(Content)
     message = int(Content)
-    print(message)
+    print(message)'''
+    if Content:
+        Content = Content.decode().replace("\r\n", "")
+        if Content:
+            message = int(Content)
+            print(message)
 
 # Quit
 pygame.quit()
